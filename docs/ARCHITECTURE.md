@@ -1,52 +1,81 @@
-# Architecture
+# Outbound OS — Architecture
 
-## Overview
-GTM Signal Intelligence Engine takes an ICP as input, discovers matching
-companies, enriches them with funding/tech stack/hiring signals, detects
-buying triggers, scores each company 0-100, and drafts a personalized cold
-email per company.
+## System Overview
+Outbound OS is a linear four-stage pipeline 
+orchestrated in raw Python with asyncio. A single 
+PipelineState object flows through each stage 
+sequentially. No frameworks — every orchestration 
+decision is explicit and inspectable.
 
-## Stack
-- Backend: Python FastAPI, SQLite via SQLAlchemy
-- Frontend: React + Tailwind via Vite
-- AI: Anthropic Claude API (claude-sonnet-4-6) with web search tool for
-  discovery, enrichment signals, and email drafting
-- Enrichment: Clearbit API free tier for company fundamentals, Wappalyzer
-  Python library for tech stack detection
+## Pipeline Stages
 
-## Pipeline flow
-1. `discovery.py` — Claude web search finds companies matching the ICP.
-2. `enrichment.py` — Clearbit + Wappalyzer + Claude web search enrich each
-   company with fundamentals, tech stack, and hiring signals.
-3. `triggers.py` — detects buying signals per company.
-4. `scoring.py` — weighted ICP scoring engine (0-100) with additive
-   trigger score boosts.
-5. `email_drafter.py` — Claude drafts a personalized cold email per
-   company using the fixed template.
+ICP Config (input)
+       ↓
+Discovery Agent
+  - Reads: icp_config
+  - Writes: raw_companies (list of name + domain)
+  - How: Claude API with web search
+       ↓
+Enrichment Agent  ← runs concurrently across companies
+  - Reads: raw_companies
+  - Writes: enriched_companies
+    (fundamentals, tech_stack, signals, news)
+  - How: Wappalyzer for tech stack, 
+         Claude web search for everything else
+       ↓
+Scoring + Trigger Agent
+  - Reads: enriched_companies, trigger_config
+  - Writes: scored_companies
+    (base_score, trigger_boosts, final_score, 
+     score_breakdown, fired_triggers)
+  - How: Pure Python weighted scoring, 
+         keyword matching for triggers
+       ↓
+Email Drafter Agent
+  - Reads: scored_companies, email_template
+  - Writes: email_draft per company
+  - How: Claude API, fixed template, 
+         Claude fills hook + contribution paragraph
+       ↓
+SQLite DB (persisted after each stage)
+       ↓
+FastAPI (reads from DB, serves frontend)
+       ↓
+React Frontend (Pipeline / Leads / Triggers tabs)
 
-## Project structure
-```
-backend/
-  main.py        FastAPI app, all routes
-  models.py      SQLAlchemy models + SQLite setup
-  enrichment.py  Clearbit + Wappalyzer + Claude web search enrichment
-  scoring.py     ICP scoring engine, 0-100, weighted criteria + trigger boosts
-  discovery.py   Claude web search company discovery
-  triggers.py    Buying signal detection per company
-  email_drafter.py  Claude email generation
-  config.json    Default ICP weights and trigger config
+## State Flow
+PipelineState is a single dataclass passed 
+explicitly between stages. Each stage reads 
+from specific fields and writes only to its 
+designated output fields. No shared memory, 
+no side effects.
 
-frontend/src/
-  App.jsx           Root, tab routing
-  components/
-    PipelineTab.jsx  ICP form + run button + status
-    LeadsTab.jsx     Leads table + expand to email
-    TriggersTab.jsx  Trigger config table
-```
+Discovery      → writes: raw_companies
+Enrichment     → writes: enriched_companies
+Scoring        → writes: scored_companies
+Email Drafter  → writes: email_drafts
 
-## Ports & networking
-- Backend runs on port 8000
-- Frontend proxies `/api` to `localhost:8000`
+## Parallelism
+Enrichment stage only. asyncio.gather() runs 
+enrichment concurrently across all discovered 
+companies. All other stages are sequential.
 
-## Data
-- All DB operations go through `models.py` (SQLAlchemy + SQLite).
+## Data Persistence
+SQLite via SQLAlchemy. Company records saved 
+after enrichment, updated after scoring, 
+updated after email drafting. Pipeline can 
+resume from last saved state if interrupted.
+
+## API Layer
+FastAPI on port 8000. CORS enabled for 
+localhost:5173. Frontend never reads from 
+DB directly, always via API routes.
+
+## Key Boundaries
+- discovery.py only writes raw_companies
+- enrichment.py only writes enriched_companies  
+- scoring.py only writes scores and trigger results
+- email_drafter.py only writes email_draft
+- models.py owns all DB operations
+- main.py owns all API routes
+- config.json owns ICP weights and trigger definitions
