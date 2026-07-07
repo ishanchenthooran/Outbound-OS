@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+python-dotenv
+anthropic
+requests
+wappalyzer
+clearbit
+pydantic
