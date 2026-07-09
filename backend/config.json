@@ -1,0 +1,65 @@
+{
+  "icp_weights": {
+    "industry_match": 20,
+    "headcount_range": 15,
+    "funding_stage": 20,
+    "tech_stack_signals": 15,
+    "gtm_hiring_activity": 15,
+    "funding_recency": 15
+  },
+  "triggers": [
+    {
+      "id": "funding_round",
+      "type": "FUNDING_ROUND",
+      "name": "Funding Round",
+      "keywords": [
+        "series",
+        "raised",
+        "funding",
+        "seed",
+        "round"
+      ],
+      "score_boost": 20,
+      "active": true
+    },
+    {
+      "id": "leadership_change",
+      "type": "LEADERSHIP_CHANGE",
+      "name": "Revenue Leadership Change",
+      "keywords": [
+        "hired",
+        "joins as",
+        "new VP",
+        "appoints",
+        "head of"
+      ],
+      "score_boost": 15,
+      "active": true
+    },
+    {
+      "id": "sdr_hiring",
+      "type": "SDR_HIRING",
+      "name": "Sales Team Hiring",
+      "keywords": [
+        "SDR",
+        "BDR",
+        "sales development",
+        "account executive"
+      ],
+      "score_boost": 12,
+      "active": true
+    },
+    {
+      "id": "competitor_acquired",
+      "type": "COMPETITOR_ACQUIRED",
+      "name": "Competitor Disruption",
+      "keywords": [
+        "acquired",
+        "acquisition",
+        "merger"
+      ],
+      "score_boost": 10,
+      "active": true
+    }
+  ]
+}
