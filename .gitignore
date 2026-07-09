@@ -217,5 +217,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Roadmap doc
+# Roadmap doc and CLAUDE.md
 ROADMAP.md
+CLAUDE.md
