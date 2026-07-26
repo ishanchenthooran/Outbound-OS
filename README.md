@@ -23,17 +23,26 @@ An AI-native GTM prospect intelligence engine. Define your ICP, and Outbound OS 
 
 ## Project structure
 
+```text
 outbound-os/
+├── docs/
+│   ├── ARCHITECTURE.md      # Pipeline design and module boundaries
+│   ├── AGENTS.md            # Module contracts and state ownership map
+│   └── DECISIONS.md         # Key design decisions and tradeoffs
+│
 ├── backend/
-│ ├── main.py # FastAPI app, all routes
-│ ├── models.py # SQLAlchemy Company model
-│ ├── discovery.py # Claude web search discovery
-│ ├── enrichment.py # Wappalyzer + Claude enrichment
-│ ├── scoring.py # Weighted ICP scoring engine
-│ ├── triggers.py # Buying signal detection
-│ ├── email_drafter.py # Claude email generation
-│ └── config.json # ICP weights + trigger config
-└── frontend/ # React + Tailwind dashboard
+│   ├── main.py              # FastAPI app, all routes, pipeline orchestration
+│   ├── models.py            # SQLAlchemy Company model, DB setup
+│   ├── discovery.py         # Claude web search company discovery
+│   ├── enrichment.py        # Wappalyzer + Claude signal enrichment
+│   ├── scoring.py           # Weighted ICP scoring engine
+│   ├── triggers.py          # Buying signal keyword detection
+│   ├── email_drafter.py     # Claude email generation
+│   ├── config.json          # ICP weights and trigger definitions
+│   └── requirements.txt
+│
+└── frontend/                # React + Tailwind dashboard (in progress)
+```
 
 ## Getting started
 
