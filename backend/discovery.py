@@ -37,7 +37,7 @@ async def discover_companies(icp_config: dict) -> list[dict]:
         tech_stack_signals = ", ".join(str(s) for s in tech_stack_signals)
 
     prompt = (
-        "Given this ideal customer profile (ICP), find 20 real companies "
+        "Given this ideal customer profile (ICP), find 8 real companies "
         "that match it as closely as possible.\n\n"
         f"Industry: {icp_config.get('industry')}\n"
         f"Headcount range: {icp_config.get('headcount_min')} to "
