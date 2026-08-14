@@ -56,14 +56,3 @@ Added
 - Empty backend module files
 - React + Tailwind frontend scaffolded 
   via Vite
-
-## Up Next: Phase 1
-- models.py: SQLAlchemy Company model
-- enrichment.py: Wappalyzer + Claude 
-  web search enrichment
-- scoring.py: weighted ICP scoring engine
-- triggers.py: buying signal keyword 
-  detection
-- discovery.py: Claude web search 
-  company discovery
-- email_drafter.py: Claude email generation
