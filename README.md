@@ -19,7 +19,7 @@ An AI-native GTM prospect intelligence engine. Define your ICP, and Outbound OS 
 ## Stack
 
 - **Backend:** Python, FastAPI, SQLite, SQLAlchemy
-- **AI:** Anthropic Claude (claude-sonnet-4-6) with web search for discovery, enrichment, and email drafting
+- **AI:** Anthropic Claude with web search — `claude-sonnet-4-6` for discovery and email drafting, `claude-haiku-4-5` for enrichment (cost/speed tradeoff, ran across many companies concurrently)
 - **Tech stack detection:** Wappalyzer
 - **Frontend:** React, Tailwind CSS, Vite
 
@@ -43,16 +43,19 @@ outbound-os/
 │   ├── config.json          # ICP weights and trigger definitions
 │   └── requirements.txt
 │
-└── frontend/                # React + Tailwind dashboard (in progress)
+└── frontend/                # React + Tailwind dashboard
 ```
 
 ## Getting started
 
 **Backend**
 ```bash
+pip install -r requirements.txt   # from repo root
+```
+Create a `.env` in the repo root with `ANTHROPIC_API_KEY=<your key>` (loaded
+automatically via `python-dotenv`, which walks up from `backend/`).
+```bash
 cd backend
-pip install -r requirements.txt
-cp .env.example .env        # add your ANTHROPIC_API_KEY
 uvicorn main:app --reload
 ```
 

@@ -5,7 +5,9 @@
 - Never hardcode API keys
 - Every module only writes to its designated 
   state fields
-- Claude model is always claude-sonnet-4-6
+- Claude model: claude-sonnet-4-6 for discovery.py and email_drafter.py,
+  claude-haiku-4-5 for enrichment.py's signal research (swapped from
+  sonnet for cost/speed since it runs concurrently per company)
 - Web search tool enabled on all Claude calls
 - Handle API failures gracefully, return partial 
   data rather than crashing
@@ -25,7 +27,7 @@ Reads: domain, company_name (per company)
 Writes: enriched_company (dict with 
 fundamentals, tech_stack, signals, news)
 Dependencies: Wappalyzer, Anthropic API 
-with web search
+with web search (claude-haiku-4-5)
 Responsibility: For each company, gather 
 industry, headcount, funding stage, funding 
 date, tech stack, recent GTM hires, open 

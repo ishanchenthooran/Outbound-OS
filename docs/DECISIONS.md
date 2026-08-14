@@ -54,6 +54,21 @@ Tradeoff: Less deterministic than
 a database lookup. Mitigated by 
 explicit output format instructions.
 
+## Enrichment model: claude-haiku-4-5 instead of claude-sonnet-4-6
+Options: Keep sonnet for enrichment, switch to haiku
+Decision: Haiku for enrichment.py's signal research call only
+Rationale: Enrichment fans out one Claude call per discovered 
+company via asyncio.gather(). At sonnet pricing/latency this made 
+a full run slow and expensive; haiku is fast and cheap enough to 
+run at that concurrency while still handling the structured JSON 
+signal extraction fine. Discovery and email drafting stayed on 
+sonnet since those are single calls per run where quality matters 
+more.
+Tradeoff: Slightly less nuanced signal extraction than sonnet. 
+Mitigated by a tightly constrained JSON-only prompt. Also reduced 
+discovery from 20 to 8 companies per run to keep total pipeline 
+time reasonable for a demo.
+
 ## Frontend: React + Tailwind via Vite
 Options: Streamlit, vanilla HTML, React
 Decision: React + Tailwind
