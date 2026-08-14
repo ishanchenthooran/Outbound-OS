@@ -2,7 +2,8 @@
 
 An AI-native GTM prospect intelligence engine. Define your ICP, and Outbound OS discovers matching companies, enriches them with funding and hiring signals, scores them against your criteria, detects buying triggers, and drafts a personalized cold email per company that's ready to review and send.
 
-<img width="1280" height="761" alt="Outbound-OS_1" src="https://github.com/user-attachments/assets/a97035e8-6c0c-4d81-8b9f-929d62d7a2f0" />
+<img width="1274" height="689" alt="image" src="https://github.com/user-attachments/assets/e091f139-2789-432a-9462-418603a1aa98" />
+<img width="1265" height="692" alt="image" src="https://github.com/user-attachments/assets/4490ce2c-80bb-45b0-a735-7ddf5085a9cf" />
 
 ## What it does
 
