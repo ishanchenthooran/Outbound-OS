@@ -17,6 +17,9 @@ An AI-native GTM prospect intelligence engine. Define your ICP, and Outbound OS 
 
 **Email drafting**: Claude generates a fully personalized cold email per company using a fixed template, filling in a stage-aware hook and contribution paragraph based on enriched signals.
 
+## Architecture
+<img width="491" height="183" alt="image" src="https://github.com/user-attachments/assets/72e6be5d-ee2e-4920-889b-b2af0c0a1870" />
+
 ## Stack
 
 - **Backend:** Python, FastAPI, SQLite, SQLAlchemy
