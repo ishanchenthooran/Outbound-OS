@@ -121,7 +121,7 @@ export default function PipelineTab() {
 
       {success && (
         <div className="mb-4 px-4 py-2 rounded-md bg-green-50 border border-green-200 text-sm text-green-700">
-          Pipeline complete — all leads are email ready.
+          Pipeline complete, all leads are email ready.
         </div>
       )}
 
@@ -199,7 +199,7 @@ export default function PipelineTab() {
 
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">
-                Score Threshold — {form.score_threshold}
+                Score Threshold: {form.score_threshold}
               </label>
               <input
                 type="range"

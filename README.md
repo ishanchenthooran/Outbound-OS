@@ -20,7 +20,7 @@ An AI-native GTM prospect intelligence engine. Define your ICP, and Outbound OS 
 ## Stack
 
 - **Backend:** Python, FastAPI, SQLite, SQLAlchemy
-- **AI:** Anthropic Claude with web search — `claude-sonnet-4-6` for discovery and email drafting, `claude-haiku-4-5` for enrichment (cost/speed tradeoff, ran across many companies concurrently)
+- **AI:** Anthropic Claude with web search: `claude-sonnet-4-6` for discovery and email drafting, `claude-haiku-4-5` for enrichment (cost/speed tradeoff, ran across many companies concurrently)
 - **Tech stack detection:** Wappalyzer
 - **Frontend:** React, Tailwind CSS, Vite
 

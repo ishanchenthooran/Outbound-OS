@@ -1,10 +1,10 @@
-# Outbound OS — Architecture
+# Outbound OS: Architecture
 
 ## System Overview
 Outbound OS is a linear four-stage pipeline 
 orchestrated in raw Python with asyncio. A single 
 PipelineState object flows through each stage 
-sequentially. No frameworks — every orchestration 
+sequentially. No frameworks, every orchestration 
 decision is explicit and inspectable.
 
 ## Pipeline Stages

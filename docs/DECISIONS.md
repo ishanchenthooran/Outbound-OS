@@ -1,4 +1,4 @@
-# Outbound OS — Design Decisions
+# Outbound OS: Design Decisions
 
 ## Orchestration: Raw Python + asyncio
 Options: LangChain, LangGraph, raw Python

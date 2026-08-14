@@ -1,11 +1,13 @@
-"""Draft emails for leads that already have a score but no email_draft,
-without re-running discovery or enrichment. Only calls email_drafter.py
-(plain Sonnet call, no web search) so it's the cheapest way to fill in
-missing emails against data already in the DB.
+"""Draft emails for leads that already have a score, without re-running
+discovery or enrichment. Only calls email_drafter.py (plain Sonnet call,
+no web search) so it's the cheapest way to (re)generate emails against
+data already in the DB.
 
 Usage:
-    python3 backfill_emails.py            # backfill all leads missing an email
-    python3 backfill_emails.py --limit 5  # backfill only the top 5 by score
+    python3 backfill_emails.py             # backfill leads missing an email
+    python3 backfill_emails.py --limit 5   # backfill only the top 5 by score
+    python3 backfill_emails.py --force     # regenerate ALL scored leads,
+                                            # overwriting existing drafts
 """
 
 import argparse
@@ -27,16 +29,16 @@ def _build_payload(record: Company) -> dict:
     }
 
 
-async def backfill(limit: int | None) -> None:
+async def backfill(limit: int | None, force: bool) -> None:
     create_tables()
     db = SessionLocal()
     try:
-        query = (
-            db.query(Company)
-            .filter(Company.status.in_([STATUS_SCORED, STATUS_EMAIL_READY]))
-            .filter((Company.email_draft.is_(None)) | (Company.email_draft == ""))
-            .order_by(Company.final_score.desc())
+        query = db.query(Company).filter(
+            Company.status.in_([STATUS_SCORED, STATUS_EMAIL_READY])
         )
+        if not force:
+            query = query.filter((Company.email_draft.is_(None)) | (Company.email_draft == ""))
+        query = query.order_by(Company.final_score.desc())
         if limit:
             query = query.limit(limit)
         records = query.all()
@@ -64,5 +66,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--limit", type=int, default=None, help="Max number of leads to draft (default: all missing)"
     )
+    parser.add_argument(
+        "--force", action="store_true", help="Regenerate all scored leads, overwriting existing drafts"
+    )
     args = parser.parse_args()
-    asyncio.run(backfill(args.limit))
+    asyncio.run(backfill(args.limit, args.force))

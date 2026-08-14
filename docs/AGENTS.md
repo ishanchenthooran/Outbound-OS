@@ -1,4 +1,4 @@
-# Outbound OS — Agent Contracts
+# Outbound OS: Agent Contracts
 
 ## Rules Every Module Must Follow
 - Every module loads env vars via python-dotenv
