@@ -51,9 +51,9 @@ parsing for non-ISO funding dates);
 otherwise pure Python
 Responsibility: Score each company 0-100 
 against ICP criteria, detect fired triggers, 
-apply boosts, return full breakdown. Industry 
-and funding stage matching is substring/
-synonym aware rather than exact.
+apply boosts, return full breakdown. Industry, 
+funding stage, and tech stack matching is 
+substring/synonym aware rather than exact.
 
 ### triggers.py
 Reads: raw_signals text, trigger_config

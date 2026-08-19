@@ -22,8 +22,16 @@
   needs a short JSON array, not a long response)
 - frontend/PipelineTab: "Series C+" renamed to "Series C" in the funding
   stage selector; Reset now requires confirmation before deleting leads
+- frontend/PipelineTab: Tech Stack Signals field placeholder and helper
+  text now point users at tools actually detectable on a public marketing
+  site (Intercom, Segment, Mixpanel, Marketo, Webflow, Stripe) instead of
+  internal sales tools (HubSpot, Salesforce, Clay) that Wappalyzer can
+  never see
 
 ### Fixed
+- scoring.py: `_score_tech_stack_signals` now does case-insensitive
+  bidirectional substring matching instead of exact set intersection, so
+  e.g. "analytics" in the ICP matches "Google Analytics" from Wappalyzer
 - discovery.py: log exceptions from the Claude discovery call instead of
   failing silently
 - discovery.py: normalize discovered domains (lowercase, strip `www.` and
