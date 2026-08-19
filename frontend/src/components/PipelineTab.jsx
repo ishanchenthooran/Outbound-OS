@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { deleteLeads, getPipelineStatus, runPipeline } from '../api'
 
-const FUNDING_STAGES = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C+']
+const FUNDING_STAGES = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C']
 const POLL_INTERVAL_MS = 3000
 const MAX_POLL_MS = 10 * 60 * 1000
 const EMPTY_STATUS = { discovered: 0, enriched: 0, scored: 0, email_ready: 0, total: 0 }
@@ -23,6 +23,7 @@ export default function PipelineTab() {
 
   const pollTimerRef = useRef(null)
   const pollStartRef = useRef(null)
+  const baselineStatusRef = useRef(EMPTY_STATUS)
 
   function stopPolling() {
     if (pollTimerRef.current) {
@@ -45,7 +46,11 @@ export default function PipelineTab() {
       const data = await getPipelineStatus()
       setStatus(data)
 
-      const complete = data.total > 0 && data.email_ready === data.total
+      const baseline = baselineStatusRef.current
+      const newTotal = data.total - baseline.total
+      const newDone =
+        data.scored + data.email_ready - (baseline.scored + baseline.email_ready)
+      const complete = newTotal > 0 && newDone >= newTotal
       const timedOut = Date.now() - pollStartRef.current > MAX_POLL_MS
 
       if (complete || timedOut) {
@@ -64,6 +69,7 @@ export default function PipelineTab() {
     setError(null)
     setSuccess(false)
     setRunning(true)
+    baselineStatusRef.current = status
     try {
       await runPipeline({
         industry: form.industry,
@@ -85,6 +91,9 @@ export default function PipelineTab() {
   }
 
   async function handleReset() {
+    if (!window.confirm('Reset all leads? This will permanently delete every discovered, enriched, and scored lead. This cannot be undone.')) {
+      return
+    }
     setError(null)
     setSuccess(false)
     stopPolling()

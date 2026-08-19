@@ -97,6 +97,8 @@ def _parse_headcount(headcount_range):
     if not numbers:
         return None
     sample = numbers[:2]
+    if len(sample) > 1:
+        sample[1] = min(sample[1], 10000)
     return round(sum(sample) / len(sample))
 
 
@@ -126,7 +128,7 @@ def _save_enriched(domain: str, enriched: dict) -> None:
         db.commit()
 
 
-def _score_one(domain: str, scoring_icp_config: dict) -> None:
+def _score_one(domain: str, scoring_icp_config: dict, trigger_config: list) -> None:
     with db_session() as db:
         record = db.query(Company).filter(Company.domain == domain).first()
         if not record or record.status != STATUS_ENRICHED:
@@ -134,7 +136,7 @@ def _score_one(domain: str, scoring_icp_config: dict) -> None:
 
         raw_signals = record.raw_signals or {}
         signal_text = json.dumps(raw_signals)
-        fired_triggers, total_boost = detect_triggers(signal_text, get_triggers())
+        fired_triggers, total_boost = detect_triggers(signal_text, trigger_config)
 
         enriched_data = {
             "industry": record.industry,
@@ -179,7 +181,8 @@ def _save_email(domain: str, email_draft: str) -> None:
         if not record:
             return
         record.email_draft = email_draft
-        record.status = STATUS_EMAIL_READY
+        if email_draft:
+            record.status = STATUS_EMAIL_READY
         db.commit()
 
 
@@ -215,12 +218,17 @@ async def run_pipeline(icp_config: dict) -> None:
         "target_tech_stack": target_tech_stack,
     }
 
+    trigger_config = get_triggers()
     for domain, _name in domains:
-        _score_one(domain, scoring_icp_config)
+        _score_one(domain, scoring_icp_config, trigger_config)
 
+    score_threshold = icp_config.get("score_threshold", 0)
     for domain, _name in domains:
         company_data = _build_email_payload(domain)
         if company_data is None:
+            continue
+        score = company_data.get("score")
+        if score is None or score < score_threshold:
             continue
         email_draft = await draft_email(company_data)
         _save_email(domain, email_draft)

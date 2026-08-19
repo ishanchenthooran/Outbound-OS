@@ -37,7 +37,10 @@ SYSTEM_PROMPT = (
     "...', naming a specific real signal from the data given (funding, "
     "acquisition, launch, hire) and why it matters. Human and genuine, "
     "no AI buzzwords or jargon, should sound like someone who actually "
-    "looked into the company.\n"
+    "looked into the company. If social_signals are available in the "
+    "company data, use them to make the hook hyper specific by "
+    "referencing something the founder actually said publicly, such as "
+    "a tweet, LinkedIn post, or public statement.\n"
     "- Contribution paragraph (2-3 sentences): a stage aware guess at "
     "what's actually hard for this company right now, ideally framed as "
     "a contrast, for example 'the hard part isn't X anymore, it's Y'. "
@@ -69,6 +72,10 @@ def _build_prompt(company_data: dict) -> str:
     industry = company_data.get("industry", "unknown")
     funding_stage = company_data.get("funding_stage", "unknown")
     signals = company_data.get("signals", company_data.get("recent_signals", []))
+    social_signals = company_data.get("social_signals")
+    if not social_signals and isinstance(signals, dict):
+        social_signals = signals.get("social_signals")
+    social_signals = social_signals or []
     fired_triggers = company_data.get("fired_triggers", [])
     score = company_data.get("score", company_data.get("final_score", "unknown"))
 
@@ -78,6 +85,7 @@ def _build_prompt(company_data: dict) -> str:
         f"Industry: {industry}\n"
         f"Funding stage: {funding_stage}\n"
         f"Recent signals: {signals}\n"
+        f"Social signals: {social_signals}\n"
         f"Fired triggers: {fired_triggers}\n"
         f"ICP score: {score}\n\n"
         "Template to fill in (replace only the bracketed sections, keep "
@@ -92,7 +100,10 @@ def _build_prompt(company_data: dict) -> str:
         "most pressing challenges and how Ishan could contribute.]\n\n"
         "Thanks!\n"
         "Ishan\n"
-        "LinkedIn | GitHub"
+        "LinkedIn | GitHub\n\n"
+        "PS — I built the tool that surfaced this signal and drafted "
+        "this email. Happy to show you how it works: "
+        "github.com/ishanchenthooran/outbound-os"
     )
 
 

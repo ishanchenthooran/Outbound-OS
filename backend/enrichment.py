@@ -25,7 +25,8 @@ fences) with exactly these keys:
   "last_funding_round": {{"amount": string or null, "date": string or null}},
   "recent_gtm_sales_hires": [string, ...],
   "open_sales_job_postings": [string, ...],
-  "recent_news": [string, ...]
+  "recent_news": [string, ...],
+  "social_signals": [string, ...]
 }}
 
 Guidance:
@@ -33,6 +34,14 @@ Guidance:
 (e.g. VP Sales, Head of Growth, CRO) announced in the last 90 days.
 - "open_sales_job_postings" should list open SDR/BDR/AE roles currently posted.
 - "recent_news" should list product launches or notable news from the last 90 days.
+- "social_signals" should list 1 to 3 recent notable tweets, LinkedIn posts, \
+or public statements from the company founders or official account about \
+their product, growth, or hiring. Each entry should be a short summary of \
+what was said and when.
+- Return all dates (including within "last_funding_round") in YYYY-MM-DD \
+ISO format only.
+- Return "funding_stage" as exactly one of: "pre-seed", "seed", "series a", \
+"series b", "series c", "series d", "growth" — lowercase only.
 - Use null or an empty list for anything you cannot find. Do not fabricate data.
 """
 
@@ -91,7 +100,7 @@ def enrich_signals(domain, company_name):
         response = client.messages.create(
             model=CLAUDE_MODEL,
             max_tokens=2048,
-            tools=[{"type": "web_search_20250305", "name": "web_search"}],
+            tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 3}],
             messages=[
                 {
                     "role": "user",
@@ -126,6 +135,7 @@ def enrich_company(domain, company_name):
         "recent_gtm_sales_hires": signals.get("recent_gtm_sales_hires") or [],
         "open_sales_job_postings": signals.get("open_sales_job_postings") or [],
         "recent_news": signals.get("recent_news") or [],
+        "social_signals": signals.get("social_signals") or [],
     }
 
     return {

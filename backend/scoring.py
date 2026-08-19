@@ -24,7 +24,30 @@ Expected icp_config shape (ICP definition + weights):
 }
 """
 
+import re
 from datetime import datetime
+
+import dateutil.parser
+
+_STOPWORDS = {"and", "or", "the", "of", "for", "a", "an", "in", "on", "to"}
+
+_INDUSTRY_SYNONYMS = {
+    "saas": {"software", "b2b", "cloud"},
+    "fintech": {"financial", "finance", "payments"},
+}
+
+_FUNDING_STAGE_EXPANSIONS = {
+    "series c+": {"series c", "series d", "growth"},
+}
+
+
+def _tokenize(text):
+    return {w for w in re.split(r"[^a-z0-9]+", text.lower()) if w and w not in _STOPWORDS}
+
+
+def _normalize_funding_stage(value):
+    value = re.sub(r"[^\w\s+]", "", str(value).lower())
+    return re.sub(r"\s+", " ", value).strip()
 
 DEFAULT_WEIGHTS = {
     "industry_match": 20,
@@ -52,10 +75,21 @@ def _count_signal(value):
 
 def _score_industry_match(enriched_data, icp_config):
     actual = enriched_data.get("industry")
-    targets = [t.strip().lower() for t in _as_list(icp_config.get("industry"))]
-    if not actual or not targets:
+    target_raw = icp_config.get("industry")
+    if not actual or not target_raw:
         return 0
-    return 10 if actual.strip().lower() in targets else 0
+    actual_lower = actual.lower()
+    target_tokens = set()
+    for t in _as_list(target_raw):
+        target_tokens |= _tokenize(t)
+    if not target_tokens:
+        return 0
+    matched = set()
+    for word in target_tokens:
+        candidates = {word} | _INDUSTRY_SYNONYMS.get(word, set())
+        if any(candidate in actual_lower for candidate in candidates):
+            matched.add(word)
+    return round(min(10, (len(matched) / len(target_tokens)) * 10), 1)
 
 
 def _score_headcount_range(enriched_data, icp_config):
@@ -73,10 +107,19 @@ def _score_headcount_range(enriched_data, icp_config):
 
 def _score_funding_stage(enriched_data, icp_config):
     actual = enriched_data.get("funding_stage")
-    targets = [t.strip().lower() for t in _as_list(icp_config.get("target_funding_stages"))]
-    if not actual or not targets:
+    if not actual:
         return 0
-    return 10 if actual.strip().lower() in targets else 0
+    actual_norm = _normalize_funding_stage(actual)
+    targets = [
+        _normalize_funding_stage(t) for t in _as_list(icp_config.get("target_funding_stages")) if t
+    ]
+    if not targets:
+        return 0
+    expanded_targets = set()
+    for target in targets:
+        expanded_targets.add(target)
+        expanded_targets |= _FUNDING_STAGE_EXPANSIONS.get(target, set())
+    return 10 if actual_norm in expanded_targets else 0
 
 
 def _score_tech_stack_signals(enriched_data, icp_config):
@@ -105,7 +148,10 @@ def _score_funding_recency(enriched_data, icp_config):
     try:
         parsed = datetime.fromisoformat(funding_date)
     except (ValueError, TypeError):
-        return 0
+        try:
+            parsed = dateutil.parser.parse(funding_date)
+        except (ValueError, TypeError, OverflowError):
+            return 0
     months_ago = (datetime.now() - parsed).days / 30
     window = icp_config.get("funding_recency_months", 12)
     if window <= 0:

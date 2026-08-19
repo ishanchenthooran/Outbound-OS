@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 
@@ -7,9 +8,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 MODEL = "claude-sonnet-4-6"
+TARGET_COMPANY_COUNT = 8
 
 client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+
+def _normalize_domain(domain: str) -> str:
+    domain = domain.strip().lower()
+    domain = re.sub(r"^www\.", "", domain)
+    domain = domain.rstrip("/")
+    return domain
 
 
 def _extract_companies(text: str) -> list[dict]:
@@ -22,7 +33,7 @@ def _extract_companies(text: str) -> list[dict]:
         if not isinstance(parsed, list):
             continue
         companies = [
-            {"name": item["name"], "domain": item["domain"]}
+            {"name": item["name"], "domain": _normalize_domain(item["domain"])}
             for item in parsed
             if isinstance(item, dict) and "name" in item and "domain" in item
         ]
@@ -37,8 +48,9 @@ async def discover_companies(icp_config: dict) -> list[dict]:
         tech_stack_signals = ", ".join(str(s) for s in tech_stack_signals)
 
     prompt = (
-        "Given this ideal customer profile (ICP), find 3 real companies "
-        "that match it as closely as possible.\n\n"
+        "Given this ideal customer profile (ICP), find "
+        f"{TARGET_COMPANY_COUNT} real companies that match it as closely "
+        "as possible.\n\n"
         f"Industry: {icp_config.get('industry')}\n"
         f"Headcount range: {icp_config.get('headcount_min')} to "
         f"{icp_config.get('headcount_max')}\n"
@@ -53,15 +65,16 @@ async def discover_companies(icp_config: dict) -> list[dict]:
     try:
         response = await client.messages.create(
             model=MODEL,
-            max_tokens=8192,
-            tools=[{"type": "web_search_20250305", "name": "web_search"}],
+            max_tokens=2048,
+            tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 3}],
             messages=[{"role": "user", "content": prompt}],
         )
     except Exception:
+        logger.exception("Claude company discovery failed")
         return []
 
     text = "".join(
         block.text for block in response.content if getattr(block, "type", None) == "text"
     )
 
-    return _extract_companies(text)
+    return _extract_companies(text)[:TARGET_COMPANY_COUNT]

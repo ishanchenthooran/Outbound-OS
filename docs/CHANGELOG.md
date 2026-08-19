@@ -2,6 +2,52 @@
 
 ## [Unreleased]
 
+### Added
+- python-dateutil added to requirements.txt (fallback date parsing for
+  funding recency scoring)
+
+### Changed
+- main.py: companies scoring below `score_threshold` no longer proceed to
+  email_drafter.py; they stay at `STATUS_SCORED` instead of `email_ready`
+- enrichment.py: `SIGNALS_PROMPT` now requires ISO (`YYYY-MM-DD`) dates and a
+  fixed lowercase `funding_stage` enum, and adds a new `social_signals`
+  field (recent founder/company tweets, LinkedIn posts, or public
+  statements)
+- email_drafter.py: system prompt instructs Claude to use `social_signals`,
+  when present, to make the hook hyper-specific; email template now ends
+  with a PS line linking to the project's GitHub repo
+- discovery.py / enrichment.py: web_search tool calls capped at
+  `max_uses: 3`
+- discovery.py: `max_tokens` reduced from 8192 to 2048 (discovery only
+  needs a short JSON array, not a long response)
+- frontend/PipelineTab: "Series C+" renamed to "Series C" in the funding
+  stage selector; Reset now requires confirmation before deleting leads
+
+### Fixed
+- discovery.py: log exceptions from the Claude discovery call instead of
+  failing silently
+- discovery.py: normalize discovered domains (lowercase, strip `www.` and
+  trailing slashes) so dedup and lookups aren't broken by inconsistent
+  formatting
+- scoring.py: `_score_industry_match` now does substring/synonym matching
+  instead of exact token intersection, so e.g. a "SaaS" ICP matches
+  "software" or "cloud" enriched industries
+- scoring.py: `_score_funding_stage` normalizes punctuation/case on both
+  sides and expands "series c+" to match series c, series d, or growth
+- scoring.py: `_score_funding_recency` falls back to
+  `dateutil.parser.parse` for natural-language dates (e.g. "March 2026")
+  that aren't valid ISO strings
+- main.py: `_parse_headcount` caps the upper bound of a parsed range at
+  10000 to avoid skewed averages from ranges like "50-10,000+ employees"
+- main.py: `_save_email` only marks a company `email_ready` when a
+  non-empty draft was actually generated
+- main.py: `get_triggers()` is now read once per pipeline run instead of
+  once per company being scored
+- frontend/PipelineTab: pipeline-complete detection now scopes to
+  companies added in the current run instead of comparing against
+  all-time totals, so it correctly waits on new companies even when older
+  ones remain at `scored` (skipped by threshold) rather than `email_ready`
+
 ## [Phase 4 - Integration - Complete]
 Changed
 - enrichment.py: switched signal research from claude-sonnet-4-6 to

@@ -9,13 +9,13 @@ An AI-native GTM prospect intelligence engine. Define your ICP, and Outbound OS 
 
 **Discovery**: Claude web searches for companies matching your ICP across industry, headcount, funding stage, geography, and tech stack signals.
 
-**Enrichment**: For each company, pulls tech stack via Wappalyzer and researches funding rounds, GTM leadership hires, open sales job postings, and recent news via Claude web search.
+**Enrichment**: For each company, pulls tech stack via Wappalyzer and researches funding rounds, GTM leadership hires, open sales job postings, recent news, and public social signals (founder/company tweets, LinkedIn posts, statements) via Claude web search.
 
 **Scoring**: Each company gets a 0–100 ICP fit score based on six weighted criteria: industry match, headcount range, funding stage, tech stack signals, GTM hiring activity, and funding recency.
 
 **Trigger detection**: Configurable buying signal triggers (recent funding round, new VP of Sales, SDR hiring, competitor acquired) stack score boosts on top of the base score.
 
-**Email drafting**: Claude generates a fully personalized cold email per company using a fixed template, filling in a stage-aware hook and contribution paragraph based on enriched signals.
+**Email drafting**: Companies scoring at or above your score threshold get a fully personalized cold email from Claude using a fixed template, with a stage-aware hook (made hyper-specific by social signals when available) and contribution paragraph based on enriched signals. Companies below threshold stay scored but skip email drafting.
 
 ## Stack
 

@@ -36,6 +36,8 @@ Email Drafter Agent
   - Writes: email_draft per company
   - How: Claude API, fixed template, 
          Claude fills hook + contribution paragraph
+  - Companies below icp_config.score_threshold are 
+    skipped here and stay at scored status
        ↓
 SQLite DB (persisted after each stage)
        ↓
