@@ -201,9 +201,12 @@ export default function PipelineTab() {
                 type="text"
                 value={form.tech_stack_signals}
                 onChange={(e) => updateField('tech_stack_signals', e.target.value)}
-                placeholder="HubSpot, Salesforce, Clay"
+                placeholder="Intercom, Segment, Mixpanel, Marketo, Webflow, Stripe"
                 className="w-full px-3 py-2 rounded-md border border-[#e2e8f0] text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6]"
               />
+              <p className="text-xs text-slate-400 mt-1">
+                Tools detectable on their public website (analytics, chat widgets, marketing automation, CMS)
+              </p>
             </div>
 
             <div>

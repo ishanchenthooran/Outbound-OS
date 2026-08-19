@@ -123,11 +123,15 @@ def _score_funding_stage(enriched_data, icp_config):
 
 
 def _score_tech_stack_signals(enriched_data, icp_config):
-    target_tech = {t.strip().lower() for t in _as_list(icp_config.get("target_tech_stack"))}
-    actual_tech = {t.strip().lower() for t in _as_list(enriched_data.get("tech_stack"))}
+    target_tech = {t.strip().lower() for t in _as_list(icp_config.get("target_tech_stack")) if t and t.strip()}
+    actual_tech = {t.strip().lower() for t in _as_list(enriched_data.get("tech_stack")) if t and t.strip()}
     if not target_tech or not actual_tech:
         return 0
-    matches = target_tech & actual_tech
+    matches = {
+        target
+        for target in target_tech
+        if any(target in actual or actual in target for actual in actual_tech)
+    }
     return round(min(10, (len(matches) / len(target_tech)) * 10), 1)
 
 
