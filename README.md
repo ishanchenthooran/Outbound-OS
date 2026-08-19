@@ -17,6 +17,9 @@ An AI-native GTM prospect intelligence engine. Define your ICP, and Outbound OS 
 
 **Email drafting**: Companies scoring at or above your score threshold get a fully personalized cold email from Claude using a fixed template, with a stage-aware hook (made hyper-specific by social signals when available) and contribution paragraph based on enriched signals. Companies below threshold stay scored but skip email drafting.
 
+## Architecture
+<img width="491" height="183" alt="image" src="https://github.com/user-attachments/assets/72e6be5d-ee2e-4920-889b-b2af0c0a1870" />
+
 ## Stack
 
 - **Backend:** Python, FastAPI, SQLite, SQLAlchemy
