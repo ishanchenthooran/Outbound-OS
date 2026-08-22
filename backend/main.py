@@ -1,10 +1,11 @@
 import asyncio
 import json
 import re
+import time
 from contextlib import asynccontextmanager, contextmanager
 
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -41,6 +42,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# In-memory rate limiting for the public demo: 1 pipeline run per IP per window.
+# Not persisted across restarts and not shared across workers — fine for a single-process demo.
+PIPELINE_RATE_LIMIT_SECONDS = 600
+_pipeline_last_run_by_ip: dict[str, float] = {}
 
 
 class ICPConfig(BaseModel):
@@ -235,7 +241,23 @@ async def run_pipeline(icp_config: dict) -> None:
 
 
 @app.post("/api/pipeline/run")
-async def run_pipeline_route(icp_config: ICPConfig, background_tasks: BackgroundTasks):
+async def run_pipeline_route(
+    icp_config: ICPConfig, background_tasks: BackgroundTasks, request: Request
+):
+    forwarded_for = request.headers.get("x-forwarded-for")
+    if forwarded_for:
+        client_ip = forwarded_for.split(",")[0].strip()
+    else:
+        client_ip = request.client.host if request.client else "unknown"
+    now = time.monotonic()
+    last_run = _pipeline_last_run_by_ip.get(client_ip)
+    if last_run is not None and now - last_run < PIPELINE_RATE_LIMIT_SECONDS:
+        raise HTTPException(
+            status_code=429,
+            detail="Demo rate limit reached, please try again in a few minutes.",
+        )
+    _pipeline_last_run_by_ip[client_ip] = now
+
     background_tasks.add_task(run_pipeline, icp_config.model_dump())
     return {"status": "started"}
 

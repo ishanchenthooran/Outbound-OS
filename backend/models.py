@@ -6,10 +6,25 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./db.sqlite3")
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError(
+        "DATABASE_URL environment variable is not set. Set it to a Postgres "
+        "connection string, e.g. "
+        "postgresql://postgres:<password>@<host>:5432/postgres?sslmode=require "
+        "(for local development, sqlite:///./db.sqlite3 also works)."
+    )
+
+if DATABASE_URL.startswith("postgres://"):
+    # SQLAlchemy requires the "postgresql://" scheme; some providers (Supabase,
+    # Heroku) still hand out connection strings using the legacy "postgres://" scheme.
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+_is_sqlite = DATABASE_URL.startswith("sqlite")
 
 engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}
+    DATABASE_URL,
+    connect_args={"check_same_thread": False} if _is_sqlite else {},
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
